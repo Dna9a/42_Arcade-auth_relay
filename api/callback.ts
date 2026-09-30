@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { sessions } from './_store'
+import { getSession, setSession } from './_store.js'
 
 const CLIENT_ID = process.env.FORTYTWO_CLIENT_ID!
 const CLIENT_SECRET = process.env.FORTYTWO_CLIENT_SECRET!
@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const sessionId = state.slice(0, sep)
   const csrfToken = state.slice(sep + 1)
-  const session = sessions.get(sessionId)
+  const session = await getSession(sessionId)
 
   if (!session || session.state !== csrfToken) {
     return res.status(400).json({ error: 'Invalid or expired session' })
@@ -62,6 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     login: me.login,
     avatar: me.image?.versions?.medium ?? '',
   }
+  await setSession(sessionId, session)
 
   res.setHeader('Content-Type', 'text/html')
   return res.send(`<!DOCTYPE html>

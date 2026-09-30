@@ -2,8 +2,12 @@
   "name": "arcade-auth-relay",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@vercel/kv": "^3.0.0"
   },
   "devDependencies": {
     "@vercel/node": "^5.0.0"
