@@ -54,6 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const me = (await meRes.json()) as {
     id: number
     login: string
+    gender: string
     image: { link: string; versions: { medium: string } } | null
   }
 
@@ -63,6 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     id: me.id,
     login: me.login,
     avatar,
+    gender: me.gender ?? '',
   }
   await setSession(sessionId, session)
 

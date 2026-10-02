@@ -4,6 +4,7 @@ export interface AuthUser {
   id: number
   login: string
   avatar: string
+  gender: string
 }
 
 export interface Session {
