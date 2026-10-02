@@ -51,18 +51,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(502).json({ error: 'Failed to fetch user profile' })
   }
 
-  const meRaw = await meRes.json()
-  const me = meRaw as {
+  const me = (await meRes.json()) as {
     id: number
     login: string
-    gender: string
     image: { link: string; versions: { medium: string } } | null
   }
-  const allKeys = Object.keys(meRaw).join(', ')
-  const genderCandidates = Object.entries(meRaw as Record<string, unknown>)
-    .filter(([k]) => /gender|sex|kind|title/i.test(k))
-    .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
-    .join('; ')
 
   const avatar = me.image?.versions?.medium ?? ''
 
@@ -70,18 +63,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     id: me.id,
     login: me.login,
     avatar,
-    gender: me.gender ?? '',
   }
   await setSession(sessionId, session)
 
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   const safeLogin = esc(me.login)
   const safeAvatar = esc(avatar)
-  console.log('[callback] avatar URL:', avatar)
-  console.log('[callback] gender:', JSON.stringify(me.gender))
   const hasAvatar = avatar !== '' && /^https:\/\/[a-z0-9.-]*\.?42\.fr\//.test(avatar)
-  const prefix = me.gender === 'male' ? 'Mr.' : me.gender === 'female' ? 'Ms.' : ''
-  const greeting = prefix ? `${prefix} ${safeLogin}` : safeLogin
 
   const avatarHtml = hasAvatar
     ? `<img src="${safeAvatar}" alt="${safeLogin}" width="96" height="96" referrerpolicy="no-referrer" class="avatar">`
@@ -93,5 +81,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <title>Logged in</title>
 <style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#111;color:#fff;text-align:center}
 .card{max-width:360px;padding:2rem}.avatar{width:96px;height:96px;border-radius:50%;border:3px solid #7ab454;margin:0 auto 1rem;object-fit:cover;display:block}.placeholder{background:#222;color:#7ab454;font-size:2.5rem;font-weight:700;line-height:96px;text-align:center}h1{font-size:1.5rem;margin:0 0 .5rem}p{color:#aaa}</style>
-</head><body><div class="card">${avatarHtml}<h1>Welcome, ${greeting}</h1><p style="color:#555;font-size:0.75rem;word-break:break-all">[debug] keys: ${allKeys}</p><p style="color:#555;font-size:0.75rem">[debug] matches: ${genderCandidates || 'none'}</p><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
+</head><body><div class="card">${avatarHtml}<h1>Welcome, ${safeLogin}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
 }
