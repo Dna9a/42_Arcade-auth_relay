@@ -24,7 +24,22 @@ Go to https://profile.intra.42.fr/oauth/applications and create a new app:
 
 Note the **UID** (client ID) and **Secret**.
 
-### 2. Deploy to Vercel
+### 2. Supabase table
+
+The relay stores sessions in a Supabase `sessions` table. The table already exists with this schema:
+
+```sql
+create table sessions (
+  id text primary key,
+  data jsonb not null,
+  expires_at timestamptz not null
+);
+alter table sessions enable row level security;
+-- No RLS policies — accessed only via service_role key
+grant all on sessions to service_role;
+```
+
+### 3. Deploy to Vercel
 
 ```bash
 npm install
@@ -38,8 +53,10 @@ Set environment variables in the Vercel dashboard (or via CLI):
 | `FORTYTWO_CLIENT_ID` | The UID from your 42 app |
 | `FORTYTWO_CLIENT_SECRET` | The secret from your 42 app |
 | `REDIRECT_URI` | `https://<your-vercel-domain>/api/callback` |
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key (not the anon key) |
 
-### 3. Point the launcher at the relay
+### 4. Point the launcher at the relay
 
 In the launcher's `executables.config.cts`, set:
 ```ts
@@ -66,5 +83,5 @@ This starts the relay at `http://localhost:3000`. Set `REDIRECT_URI` to `http://
 
 ## Notes
 
-- Sessions are stored in memory and expire after 5 minutes. Since Vercel serverless functions can share memory within a single instance, this works for low-traffic use (arcade cabinets). For higher scale, swap the in-memory Map for Vercel KV or Redis.
-- The relay is stateless across cold starts — a session created on one invocation may not exist if the function cold-starts before the poll. In practice, the 42 login + redirect + poll cycle completes in under 30 seconds, well within a single warm window.
+- Sessions are stored in Supabase (Postgres) with a 5-minute TTL. Expired rows are cleaned up opportunistically on each new session creation.
+- Polling is race-safe: the poll endpoint uses an atomic `DELETE ... RETURNING` so two simultaneous polls can't both receive the user.

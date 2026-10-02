@@ -17,7 +17,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.json({ status: 'pending' })
   }
 
-  const { user } = session
-  await deleteSession(id)
-  return res.json({ status: 'complete', user })
+  // Race-safe: atomic delete-and-return so two simultaneous polls can't both get the user
+  const deleted = await deleteSession(id)
+  if (!deleted || !deleted.user) {
+    return res.json({ status: 'expired' })
+  }
+
+  return res.json({ status: 'complete', user: deleted.user })
 }
