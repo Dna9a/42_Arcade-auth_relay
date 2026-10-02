@@ -72,6 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const safeLogin = esc(me.login)
   const safeAvatar = esc(avatar)
   console.log('[callback] avatar URL:', avatar)
+  console.log('[callback] gender:', JSON.stringify(me.gender))
   const hasAvatar = avatar !== '' && /^https:\/\/[a-z0-9.-]*\.?42\.fr\//.test(avatar)
   const prefix = me.gender === 'male' ? 'Mr.' : me.gender === 'female' ? 'Ms.' : ''
   const greeting = prefix ? `${prefix} ${safeLogin}` : safeLogin
