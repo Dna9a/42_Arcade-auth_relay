@@ -87,5 +87,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <title>Logged in</title>
 <style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#111;color:#fff;text-align:center}
 .card{max-width:360px;padding:2rem}.avatar{width:96px;height:96px;border-radius:50%;border:3px solid #7ab454;margin:0 auto 1rem;object-fit:cover;display:block}.placeholder{background:#222;color:#7ab454;font-size:2.5rem;font-weight:700;line-height:96px;text-align:center}h1{font-size:1.5rem;margin:0 0 .5rem}p{color:#aaa}</style>
-</head><body><div class="card">${avatarHtml}<h1>Welcome, ${greeting}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
+</head><body><div class="card">${avatarHtml}<h1>Welcome, ${greeting}</h1><p style="color:#555;font-size:0.75rem">[debug] gender=${JSON.stringify(me.gender)}</p><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
 }
