@@ -57,18 +57,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     image: { link: string; versions: { medium: string } } | null
   }
 
+  const avatar = me.image?.versions?.medium ?? ''
+
   session.user = {
     id: me.id,
     login: me.login,
-    avatar: me.image?.versions?.medium ?? '',
+    avatar,
   }
   await setSession(sessionId, session)
+
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const safeLogin = esc(me.login)
+  const safeAvatar = esc(avatar)
+  console.log('[callback] avatar URL:', avatar)
+  const hasAvatar = avatar !== '' && /^https:\/\/[a-z0-9.-]*\.?42\.fr\//.test(avatar)
+
+  const avatarHtml = hasAvatar
+    ? `<img src="${safeAvatar}" alt="${safeLogin}" width="96" height="96" referrerpolicy="no-referrer" class="avatar">`
+    : `<div class="avatar placeholder">${safeLogin.charAt(0).toUpperCase()}</div>`
 
   res.setHeader('Content-Type', 'text/html')
   return res.send(`<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Logged in</title>
 <style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#111;color:#fff;text-align:center}
-.card{max-width:360px;padding:2rem}h1{font-size:1.5rem;margin:0 0 .5rem}p{color:#aaa}</style>
-</head><body><div class="card"><h1>Welcome, ${me.login}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
+.card{max-width:360px;padding:2rem}.avatar{width:96px;height:96px;border-radius:50%;border:3px solid #7ab454;margin:0 auto 1rem;object-fit:cover;display:block}.placeholder{background:#222;color:#7ab454;font-size:2.5rem;font-weight:700;line-height:96px;text-align:center}h1{font-size:1.5rem;margin:0 0 .5rem}p{color:#aaa}</style>
+</head><body><div class="card">${avatarHtml}<h1>Welcome, ${safeLogin}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
 }
