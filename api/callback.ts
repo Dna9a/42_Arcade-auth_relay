@@ -73,6 +73,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const safeAvatar = esc(avatar)
   console.log('[callback] avatar URL:', avatar)
   const hasAvatar = avatar !== '' && /^https:\/\/[a-z0-9.-]*\.?42\.fr\//.test(avatar)
+  const prefix = me.gender === 'male' ? 'Mr.' : me.gender === 'female' ? 'Ms.' : ''
+  const greeting = prefix ? `${prefix} ${safeLogin}` : safeLogin
 
   const avatarHtml = hasAvatar
     ? `<img src="${safeAvatar}" alt="${safeLogin}" width="96" height="96" referrerpolicy="no-referrer" class="avatar">`
@@ -84,5 +86,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <title>Logged in</title>
 <style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#111;color:#fff;text-align:center}
 .card{max-width:360px;padding:2rem}.avatar{width:96px;height:96px;border-radius:50%;border:3px solid #7ab454;margin:0 auto 1rem;object-fit:cover;display:block}.placeholder{background:#222;color:#7ab454;font-size:2.5rem;font-weight:700;line-height:96px;text-align:center}h1{font-size:1.5rem;margin:0 0 .5rem}p{color:#aaa}</style>
-</head><body><div class="card">${avatarHtml}<h1>Welcome, ${safeLogin}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
+</head><body><div class="card">${avatarHtml}<h1>Welcome, ${greeting}</h1><p>You can close this tab and return to the arcade cabinet.</p></div></body></html>`)
 }
